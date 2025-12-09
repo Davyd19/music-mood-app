@@ -12,9 +12,14 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Load Engine ke Session State
+# Initialize Session State
 if 'engine' not in st.session_state:
     st.session_state.engine = MusicMLEngine()
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = "Home"
+
+engine = st.session_state.engine
+COLORS = engine.COLORS
 
 # Load CSS Helper
 def load_css(file_name):
@@ -22,239 +27,296 @@ def load_css(file_name):
         with open(file_name) as f:
             st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
     except FileNotFoundError:
-        st.warning("File styles.css tidak ditemukan. Tampilan mungkin berbeda.")
+        st.warning("File styles.css tidak ditemukan.")
 
 load_css('styles.css')
 
-# --- 2. SIDEBAR ---
+# --- 2. SIDEBAR NAVIGATION ---
 with st.sidebar:
-    st.title("🎵 MoodAnalyzer")
-    st.caption("v3.1 • Dark Mode Edition")
-    st.markdown("---")
+    st.markdown('<div class="sidebar-header">🎵 MoodAnalyzer</div>', unsafe_allow_html=True)
     
-    menu = st.radio(
-        "Navigation",
-        [
-            "🏠 Home", 
-            "📂 Upload Data", 
-            "📝 Raw Data", 
-            "⚙️ Process Transparency", 
-            "📊 Analytics Dashboard", 
-            "🎧 Playlist & Search"
-        ]
-    )
+    # Navigation Items
+    nav_items = [
+        {"name": "Home", "icon": "🏠"},
+        {"name": "Input Dataset", "icon": "📂"},
+        {"name": "Pemrosesan Data", "icon": "⚙️"}, # Renamed from Clustering AI
+        {"name": "Visualisasi", "icon": "📊"},
+        {"name": "Song Explorer", "icon": "🎧"}
+    ]
     
+    st.markdown("### Navigasi")
+    
+    for item in nav_items:
+        # Style button active/inactive
+        is_active = st.session_state.current_page == item["name"]
+        btn_type = "primary" if is_active else "secondary"
+        
+        if st.button(f"{item['icon']} {item['name']}", key=item['name'], use_container_width=True, type=btn_type):
+            st.session_state.current_page = item["name"]
+            st.rerun()
+
     st.markdown("---")
-    # Mengakses data dari Engine
-    if st.session_state.engine.processed_data is not None:
-        count = len(st.session_state.engine.processed_data)
-        st.success(f"✅ Loaded: {count} songs")
+    # Data Status Indicator
+    if engine.processed_data is not None:
+        count = len(engine.processed_data)
+        method = engine.processed_data['method'].iloc[0]
+        st.success(f"✅ Data Siap\n\n🎵 {count} Lagu\n⚙️ {method}")
     else:
-        st.info("Waiting for data...")
+        st.info("Menunggu data...")
 
-# --- 3. PAGE CONTENT ---
-engine = st.session_state.engine
-COLORS = engine.COLORS # Ambil palet warna dari engine
+# --- 3. PAGE ROUTING & CONTENT ---
 
-# === HOME ===
-if menu == "🏠 Home":
-    col_head, col_img = st.columns([2, 1])
-    with col_head:
-        st.title("Music Mood Analyzer")
+# === HOME PAGE ===
+if st.session_state.current_page == "Home":
+    # Hero Section
+    st.markdown("""
+    <div class="main-header">
+        <h1>Music Mood Analyzer</h1>
+        <p>Sistem analisis emosi musik berbasis <b>Machine Learning (K-Means Clustering)</b>. 
+        Mengelompokkan lagu secara otomatis berdasarkan pola audio (Valence & Energy) tanpa aturan manual.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Features Grid
+    c1, c2, c3 = st.columns(3)
+    with c1:
         st.markdown("""
-        <p style='font-size: 1.1rem; line-height: 1.6;'>
-        Sistem analisis emosi musik berbasis <b>Russell's Circumplex Model</b>. 
-        Kini hadir dengan tampilan <b>Dark Mode</b> yang elegan untuk pengalaman visual yang lebih baik.
-        </p>
+        <div class="info-card">
+            <h3 style="color:#8E7CEE">🤖 Auto Clustering</h3>
+            <p>Algoritma secara otomatis menemukan pola tersembunyi dan mengelompokkan lagu berdasarkan kemiripan emosi.</p>
+        </div>
         """, unsafe_allow_html=True)
+    with c2:
+        st.markdown("""
+        <div class="info-card">
+            <h3 style="color:#8E7CEE">📊 Smart Insights</h3>
+            <p>Analisis mendalam dengan Silhouette Score untuk menentukan pembagian kelompok mood yang paling optimal.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with c3:
+        st.markdown("""
+        <div class="info-card">
+            <h3 style="color:#8E7CEE">🔍 Deep Search</h3>
+            <p>Temukan lagu berdasarkan mood cluster yang terbentuk, filter genre, dan analisis karakteristik audio.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    st.markdown('<div class="step-header"><h3>🚀 Tahapan Proses</h3></div>', unsafe_allow_html=True)
+    col1, col2, col3, col4 = st.columns(4)
+    steps = ["1. Upload Data", "2. Proses Clustering", "3. Visualisasi", "4. Eksplorasi"]
+    for i, step in enumerate(steps):
+        with [col1, col2, col3, col4][i]:
+            st.markdown(f"**{step}**")
     
-    # Feature Cards
-    c1, c2, c3, c4 = st.columns(4)
-    features = [("🎯 Mood Detection", "AI Classification"), ("📊 Analytics", "Deep Insights"), 
-                ("🔍 Smart Search", "Instant Find"), ("📈 Audio Features", "Radar Analysis")]
+    st.markdown("---")
+    if st.button("Mulai Sekarang 👉", type="primary"):
+        st.session_state.current_page = "Input Dataset"
+        st.rerun()
+
+# === INPUT DATASET PAGE ===
+elif st.session_state.current_page == "Input Dataset":
+    st.markdown("""
+    <div class="step-header">
+        <h1>📂 Input Dataset</h1>
+        <p>Upload file CSV dataset musik Anda untuk memulai analisis.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns([2, 1])
     
-    for i, (t, d) in enumerate(features):
-        with [c1, c2, c3, c4][i]:
-            with st.container(border=True):
-                st.markdown(f"**{t}**")
-                st.caption(d)
-
-    # Logic Viz
-    st.markdown("### 🧠 Logic Visualization")
-    with st.container(border=True):
-        col_d, col_c = st.columns(2)
-        with col_d:
-            st.markdown("""
-            **Quadrants:**
-            1. 🟡 **Happy**: High Valence, High Energy
-            2. 🔴 **Angry**: Low Valence, High Energy
-            3. 🔵 **Sad**: Low Valence, Low Energy
-            4. 🟢 **Chill**: High Valence, Low Energy
-            """)
-        with col_c:
-            fig = go.Figure()
-            configs = [
-                (0.5, 0.5, 1, 1, COLORS['moods']["Happy / Energetic"], "HAPPY"),
-                (0, 0.5, 0.5, 1, COLORS['moods']["Angry / Aggressive"], "ANGRY"),
-                (0, 0, 0.5, 0.5, COLORS['moods']["Sad / Melancholic"], "SAD"),
-                (0.5, 0, 1, 0.5, COLORS['moods']["Chill / Peaceful"], "CHILL")
-            ]
-            for x0, y0, x1, y1, color, label in configs:
-                fig.add_shape(type="rect", x0=x0, y0=y0, x1=x1, y1=y1, fillcolor=color, opacity=0.6, line_width=0)
-                fig.add_annotation(x=(x0+x1)/2, y=(y0+y1)/2, text=label, showarrow=False, 
-                                 font=dict(color="white", weight="bold"))
-            
-            fig.update_xaxes(range=[0,1], showgrid=False, title="Valence")
-            fig.update_yaxes(range=[0,1], showgrid=False, title="Energy")
-            fig.update_layout(
-                height=200, 
-                margin=dict(t=0,b=20,l=20,r=20), 
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(color=COLORS['text'])
-            )
-            st.plotly_chart(fig, use_container_width=True)
-
-# === UPLOAD ===
-elif menu == "📂 Upload Data":
-    st.title("📂 Upload Dataset")
-    with st.container(border=True):
-        uploaded_file = st.file_uploader("Upload CSV (wajib kolom: valence, energy)", type=['csv'])
+    with col1:
+        st.markdown('<div class="upload-section">', unsafe_allow_html=True)
+        uploaded_file = st.file_uploader("Drop CSV file here", type=['csv'], label_visibility="collapsed")
+        st.markdown('</div>', unsafe_allow_html=True)
+        
         if uploaded_file:
-            result = engine.load_data(uploaded_file)
-            if result["success"]:
-                st.success(result["message"])
-                st.dataframe(engine.processed_data.head(), use_container_width=True)
+            res = engine.load_data(uploaded_file)
+            if res["success"]:
+                st.success(res["message"])
+                engine.recommend_clusters()
             else:
-                st.error(result["message"])
+                st.error(res["message"])
 
-# === RAW DATA ===
-elif menu == "📝 Raw Data":
-    st.title("📝 Data Inspector")
+    with col2:
+        with st.container(border=True):
+            st.markdown("#### 📋 Persyaratan File")
+            st.markdown("""
+            * Format: **CSV**
+            * Kolom Wajib:
+                * `valence` (0.0 - 1.0)
+                * `energy` (0.0 - 1.0)
+            * Kolom Opsional: 
+                * `artist`, `song`, `genre`
+            """)
+
+    # Data Preview Section
     if engine.raw_data is not None:
-        with st.container(border=True):
-            st.dataframe(engine.raw_data, use_container_width=True, height=500)
+        st.markdown("### 📝 Preview Data Mentah")
+        with st.expander("Lihat Tabel Data", expanded=True):
+            st.dataframe(engine.raw_data.head(10), use_container_width=True)
+        
+        if st.button("Lanjut ke Pemrosesan 👉", type="primary"):
+            st.session_state.current_page = "Pemrosesan Data"
+            st.rerun()
+
+# === PEMROSESAN DATA PAGE (Formerly Clustering AI) ===
+elif st.session_state.current_page == "Pemrosesan Data":
+    if engine.raw_data is None:
+        st.warning("⚠️ Silakan upload dataset terlebih dahulu.")
+        if st.button("Kembali ke Upload"):
+            st.session_state.current_page = "Input Dataset"
+            st.rerun()
     else:
-        st.warning("Upload data terlebih dahulu.")
+        st.markdown("""
+        <div class="step-header">
+            <h1>⚙️ Konfigurasi & Training</h1>
+            <p>Atur parameter Clustering dan latih model untuk mengelompokkan data.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-# === TRANSPARENCY ===
-elif menu == "⚙️ Process Transparency":
-    st.title("⚙️ Behind The Scenes")
-    if engine.processed_data is not None:
-        df = engine.processed_data
-        with st.container(border=True):
-            st.subheader("1️⃣ Ekstraksi")
-            st.dataframe(df[['song', 'valence', 'energy']].head(3), use_container_width=True)
+        # FIXED UI: Menggunakan st.container(border=True) agar kotak tidak kosong/error
+        c1, c2 = st.columns([1, 2])
         
-        with st.container(border=True):
-            st.subheader("2️⃣ Logika")
-            st.code("""
-def _get_mood_logic(self, valence, energy):
-    if valence >= 0.5 and energy >= 0.5: return "Happy"
-    elif valence < 0.5 and energy >= 0.5: return "Angry"
-    # ... dst
-            """, language="python")
-        
-        with st.container(border=True):
-            st.subheader("3️⃣ Hasil")
-            st.dataframe(df[['song', 'mood']].head(3), use_container_width=True)
-    else:
-        st.warning("Upload data terlebih dahulu.")
-
-# === DASHBOARD ===
-elif menu == "📊 Analytics Dashboard":
-    st.title("📊 Analytics Dashboard")
-    if engine.processed_data is not None:
-        # Filter UI
-        with st.container(border=True):
-            c1, c2 = st.columns(2)
-            df_full = engine.processed_data
-            genres = ['All'] + sorted(df_full['genre'].astype(str).unique().tolist()) if 'genre' in df_full.columns else ['All']
-            
-            sel_genre = c1.selectbox("Genre", genres)
-            sel_mood = c2.selectbox("Mood", ["All"] + list(COLORS['moods'].keys()))
-        
-        # Get Filtered Data
-        df_filtered = engine.get_filtered_data(genre=sel_genre, mood=sel_mood)
-        
-        # Metrics
-        with st.container(border=True):
-            m1, m2, m3 = st.columns(3)
-            m1.metric("Total Songs", len(df_filtered))
-            top_mood = df_filtered['mood'].mode()[0] if not df_filtered.empty else "-"
-            m2.metric("Dominant Mood", top_mood.split("/")[0])
-            avg_tempo = df_filtered['tempo'].mean() if 'tempo' in df_filtered.columns else 0
-            m3.metric("Avg Tempo", f"{avg_tempo:.0f} BPM")
-
-        # Charts
-        c1, c2 = st.columns([2,1])
         with c1:
             with st.container(border=True):
-                st.markdown("#### 🗺️ Map")
-                fig = px.scatter(df_filtered, x='valence', y='energy', color='mood', 
-                               hover_data=['artist', 'song'], color_discrete_map=COLORS['moods'])
-                fig.add_hline(y=0.5, line_dash="dash", line_color="gray")
-                fig.add_vline(x=0.5, line_dash="dash", line_color="gray")
-                
-                # Update layout untuk dark mode
-                fig.update_layout(
-                    plot_bgcolor='rgba(0,0,0,0)', 
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color=COLORS['text']),
-                    height=400,
-                    xaxis=dict(showgrid=True, gridcolor='#333'),
-                    yaxis=dict(showgrid=True, gridcolor='#333')
-                )
-                # NOTE: use_container_width=True is standard for Streamlit Cloud stability
-                st.plotly_chart(fig, use_container_width=True)
+                st.markdown("#### 💡 Rekomendasi Sistem")
+                best_k = engine.cluster_metrics['best_k'] if engine.cluster_metrics else 4
+                st.metric("Jumlah Cluster Optimal", f"{best_k}", "Silhouette Score")
+                st.caption("Sistem menyarankan jumlah ini berdasarkan pola data.")
+
         with c2:
             with st.container(border=True):
-                st.markdown("#### 🥧 Proportion")
-                counts = df_filtered['mood'].value_counts()
-                fig = px.pie(values=counts.values, names=counts.index, color=counts.index, 
-                             color_discrete_map=COLORS['moods'], hole=0.6)
+                st.markdown("#### ⚙️ Parameter Proses")
+                n_clusters = st.slider("Jumlah Kelompok (Cluster)", 2, 6, best_k)
+                st.caption("Menentukan berapa banyak variasi mood yang ingin dibentuk.")
+                
+                if st.button("🚀 Jalankan Analisis (Train Model)", type="primary", use_container_width=True):
+                    with st.spinner("Sedang memproses data..."):
+                        status = engine.process_data_clustering(n_clusters)
+                        if status == "Sukses":
+                            st.balloons()
+                            st.success("Analisis Selesai! Model telah dilatih.")
+                        else:
+                            st.error(status)
+
+        # Transparency Section
+        if engine.processed_data is not None:
+            st.markdown("### 🔍 Transparansi Proses")
+            tab1, tab2 = st.tabs(["📊 Evaluasi Model", "📍 Logika Pembagian"])
+            
+            with tab1:
+                st.markdown("**Analisis Skor Silhouette** (Semakin tinggi semakin baik pemisahannya)")
+                if engine.cluster_metrics:
+                    scores = engine.cluster_metrics['scores']
+                    score_df = pd.DataFrame(list(scores.items()), columns=['Jumlah Cluster', 'Score'])
+                    fig = px.bar(score_df, x='Jumlah Cluster', y='Score', color='Score', 
+                               color_continuous_scale='Viridis')
+                    fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font=dict(color='white'))
+                    st.plotly_chart(fig, use_container_width=True)
+            
+            with tab2:
+                st.markdown("**Titik Pusat (Centroid) Cluster**")
+                if engine.centroids is not None:
+                    centroids_df = pd.DataFrame(engine.centroids, columns=['Valence (Positifitas)', 'Energy (Intensitas)'])
+                    centroids_df.index.name = 'Cluster ID'
+                    st.dataframe(centroids_df, use_container_width=True)
+            
+            st.markdown("---")
+            if st.button("Lihat Hasil Visualisasi 👉", type="primary"):
+                st.session_state.current_page = "Visualisasi"
+                st.rerun()
+
+# === VISUALISASI PAGE ===
+elif st.session_state.current_page == "Visualisasi":
+    if engine.processed_data is None:
+        st.warning("⚠️ Data belum diproses. Lakukan Training Model dulu.")
+    else:
+        st.markdown("""
+        <div class="step-header">
+            <h1>📊 Dashboard Visualisasi</h1>
+            <p>Hasil analisis persebaran mood dalam dataset musik Anda.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        df = engine.processed_data
+        
+        # FIXED UI: Menggunakan container border untuk Metrics agar terlihat jelas
+        with st.container(border=True):
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Total Lagu", len(df))
+            c2.metric("Dominant Mood", df['mood'].mode()[0])
+            c3.metric("Variasi Mood", f"{df['cluster_id'].nunique()} Kelompok")
+        
+        st.markdown("---")
+        
+        # Main Charts
+        col_viz, col_pie = st.columns([2, 1])
+        
+        with col_viz:
+            with st.container(border=True):
+                st.subheader("🗺️ Peta Persebaran Cluster")
+                fig = px.scatter(df, x='valence', y='energy', color='mood', 
+                               hover_data=['artist', 'song'],
+                               color_discrete_sequence=px.colors.qualitative.Pastel)
+                fig.add_hline(y=0.5, line_dash="dash", line_color="gray")
+                fig.add_vline(x=0.5, line_dash="dash", line_color="gray")
                 fig.update_layout(
-                    showlegend=False, 
-                    height=300, 
-                    margin=dict(t=0,b=0,l=0,r=0),
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color=COLORS['text'])
+                    plot_bgcolor='rgba(0,0,0,0)', 
+                    paper_bgcolor='rgba(0,0,0,0)', 
+                    font=dict(color='white'),
+                    xaxis_title="Valence (Tidak Senang ↔ Senang)",
+                    yaxis_title="Energy (Tenang ↔ Intens)"
                 )
                 st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.warning("Upload data terlebih dahulu.")
+            
+        with col_pie:
+            with st.container(border=True):
+                st.subheader("🥧 Proporsi")
+                counts = df['mood'].value_counts()
+                fig = px.pie(values=counts.values, names=counts.index, color=counts.index, 
+                             color_discrete_sequence=px.colors.qualitative.Pastel, hole=0.6)
+                fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', font=dict(color='white'), showlegend=False)
+                st.plotly_chart(fig, use_container_width=True)
 
-# === SEARCH ===
-elif menu == "🎧 Playlist & Search":
-    st.title("🎧 Song Explorer")
-    if engine.processed_data is not None:
+# === SONG EXPLORER PAGE ===
+elif st.session_state.current_page == "Song Explorer":
+    if engine.processed_data is None:
+        st.warning("⚠️ Data belum diproses.")
+    else:
+        st.markdown("""
+        <div class="step-header">
+            <h1>🎧 Song Explorer</h1>
+            <p>Cari lagu dan analisis fitur audio secara mendalam.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
         with st.container(border=True):
             c1, c2 = st.columns([3, 1])
-            q = c1.text_input("Search", placeholder="Title / Artist")
-            m = c2.selectbox("Mood Filter", ["All"] + list(COLORS['moods'].keys()))
+            q = c1.text_input("🔍 Cari Judul / Artis", placeholder="Ketik nama lagu...")
+            mood_opts = ["Semua"] + list(engine.processed_data['mood'].unique())
+            m = c2.selectbox("Filter Mood", mood_opts)
         
-        res = engine.search_songs(q, m)
-        st.caption(f"Found {len(res)} songs")
+        # Adjust filter param for 'Semua'
+        search_mood = "All" if m == "Semua" else m
+        res = engine.search_songs(q, search_mood)
         
-        with st.expander("📋 List View", expanded=True):
-            st.dataframe(res[['song', 'artist', 'mood', 'valence', 'energy']], use_container_width=True)
+        st.markdown(f"**Ditemukan:** {len(res)} lagu")
+        st.dataframe(res[['song', 'artist', 'mood', 'valence', 'energy']], use_container_width=True)
         
-        # Deep Dive
         if len(res) > 0:
             st.markdown("---")
-            sel_song = st.selectbox("Select Song", res['display_title'].unique())
+            sel_song = st.selectbox("Pilih Lagu untuk Detail", res['display_title'].unique())
             data = engine.get_song_details(sel_song)
             
             if data is not None:
                 with st.container(border=True):
-                    # Header
                     ch1, ch2 = st.columns([3, 1])
                     with ch1:
                         st.markdown(f"## {data['song']}")
                         st.markdown(f"**{data['artist']}**")
                     with ch2:
-                        color = COLORS['moods'].get(data['mood'], "#ccc")
-                        st.markdown(f"<div class='mood-badge' style='background:{color}'>{data['mood'].split('/')[0]}</div>", unsafe_allow_html=True)
+                        # Menggunakan warna dinamis jika tersedia, atau default ungu
+                        st.markdown(f"<div class='mood-badge' style='background:#8E7CEE'>{data['mood']}</div>", unsafe_allow_html=True)
                     
                     st.markdown("---")
                     # Radar Chart
@@ -265,20 +327,8 @@ elif menu == "🎧 Playlist & Search":
                     if vals:
                         fig = go.Figure(data=go.Scatterpolar(
                             r=vals, theta=cats, fill='toself', 
-                            line_color=COLORS['accent'],
-                            fillcolor='rgba(142, 124, 238, 0.3)'
+                            line_color='#8E7CEE', fillcolor='rgba(142, 124, 238, 0.3)'
                         ))
-                        fig.update_layout(
-                            polar=dict(
-                                radialaxis=dict(visible=True, range=[0,1], gridcolor='#444', linecolor='#444'),
-                                angularaxis=dict(gridcolor='#444', linecolor='#444'),
-                                bgcolor='rgba(0,0,0,0)'
-                            ),
-                            height=300, 
-                            margin=dict(t=20,b=20),
-                            paper_bgcolor='rgba(0,0,0,0)',
-                            font=dict(color=COLORS['text'])
-                        )
+                        fig.update_layout(polar=dict(bgcolor='rgba(0,0,0,0)', radialaxis=dict(visible=True, range=[0,1])),
+                                        paper_bgcolor='rgba(0,0,0,0)', font=dict(color='white'), height=300)
                         st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.warning("Upload data terlebih dahulu.")

@@ -1,114 +1,205 @@
-/* Global Settings */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+/* ==================== MUSIC MOOD APP STYLES (ADAPTED) ==================== */
 
-/* Variable Colors - DARK MODE */
+/* Variable Colors - DARK MODE THEME */
 :root {
-    --bg-color: #0E1117;       /* Background Utama (Sangat Gelap) */
-    --card-color: #262730;     /* Warna Kartu (Abu-abu Gelap) */
-    --text-primary: #FAFAFA;   /* Teks Utama (Putih) */
-    --text-secondary: #B0B0B0; /* Teks Sekunder (Abu-abu Terang) */
-    --accent-color: #8E7CEE;   /* Aksen Ungu (Diterangkan sedikit agar kontras) */
-    --border-color: #383B42;   /* Warna Border Gelap */
+    --primary-bg: #0E1117;       /* Background Utama */
+    --secondary-bg: #1A1C24;     /* Background Sidebar/Input */
+    --card-bg: #262730;          /* Warna Kartu */
+    --text-primary: #FAFAFA;     /* Teks Utama */
+    --text-secondary: #B0B0B0;   /* Teks Sekunder */
+    --accent-color: #8E7CEE;     /* Ungu Utama */
+    --accent-hover: #7A65E0;     /* Ungu Hover */
+    --accent-bg: rgba(142, 124, 238, 0.15); /* Ungu Transparan */
+    --success-color: #00CC96;
+    --warning-color: #FFAA00;
+    --error-color: #FF5252;
+    --border-color: #383B42;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+    --shadow-glow: 0 0 15px rgba(142, 124, 238, 0.3);
 }
 
+/* Base Settings */
 .stApp {
-    background-color: var(--bg-color);
-    font-family: 'Poppins', sans-serif;
+    background-color: var(--primary-bg);
     color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
 }
 
-/* Headings */
+/* Hide Streamlit Default Elements - FIXED */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+/* header {visibility: hidden;} <--- BARIS INI DIHAPUS agar tombol sidebar tetap muncul */
+
+/* Opsional: Membuat header transparan agar tidak mengganggu desain */
+[data-testid="stHeader"] {
+    background-color: transparent;
+}
+
+/* Layout Container */
+.main .block-container {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    max-width: 1400px;
+}
+
+/* ==================== COMPONENTS FROM REFERENCE ==================== */
+
+/* 1. Header & Titles */
+.main-header {
+    background: var(--card-bg);
+    padding: 2.5rem 2rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent-color);
+    box-shadow: var(--shadow-md);
+}
+
+.step-header {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border-left: 4px solid var(--accent-color);
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
 h1, h2, h3 {
     color: var(--text-primary) !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
 }
 
-p, span, li, label, .stMarkdown {
-    color: var(--text-primary);
+/* 2. Navigation (Sidebar) */
+.sidebar-header {
+    background: var(--accent-color);
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+    color: white;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-glow);
 }
 
-.caption {
+.nav-item {
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
     color: var(--text-secondary);
-    font-size: 0.9rem;
+    border: 1px solid transparent;
 }
 
-/* Sidebar Dark Look */
-[data-testid="stSidebar"] {
-    background-color: var(--card-color);
-    border-right: 1px solid var(--border-color);
+.nav-item:hover {
+    background-color: var(--accent-bg);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
 }
 
-[data-testid="stSidebar"] h1, 
-[data-testid="stSidebar"] h2, 
-[data-testid="stSidebar"] h3,
-[data-testid="stSidebar"] span, 
-[data-testid="stSidebar"] p {
-    color: var(--text-primary) !important;
+/* 3. Cards & Containers */
+.info-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: transform 0.2s;
 }
 
-/* Cards (Container dengan Border) */
-div[data-testid="stVerticalBlockBorderWrapper"] {
-    background-color: var(--card-color);
-    border: 1px solid var(--border-color) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3) !important; /* Shadow lebih tebal utk dark mode */
-    padding: 20px !important;
+.info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-glow);
+    border-color: var(--accent-color);
 }
 
-/* Buttons */
+.content-wrapper {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* 4. Upload Section */
+.upload-section {
+    background: var(--secondary-bg);
+    border: 2px dashed var(--border-color);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.upload-section:hover {
+    border-color: var(--accent-color);
+    background: rgba(142, 124, 238, 0.05);
+}
+
+/* 5. Buttons */
 .stButton > button {
-    background-color: var(--accent-color) !important;
-    color: #FFFFFF !important;
-    border-radius: 8px !important;
-    border: none !important;
-    font-weight: 500 !important;
-    transition: all 0.3s ease;
+    background-color: var(--card-bg);
+    color: var(--accent-color) !important;
+    border: 1px solid var(--accent-color);
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s;
 }
 
 .stButton > button:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(142, 124, 238, 0.4) !important;
+    background-color: var(--accent-bg);
+    box-shadow: var(--shadow-glow);
 }
 
-/* Metrics Styling */
+/* Primary Button */
+.stButton > button[kind="primary"] {
+    background-color: var(--accent-color) !important;
+    color: white !important;
+    border: none;
+}
+
+.stButton > button[kind="primary"]:hover {
+    background-color: var(--accent-hover) !important;
+    box-shadow: var(--shadow-glow);
+}
+
+/* 6. Metrics & Badges */
 [data-testid="stMetricValue"] {
     color: var(--accent-color) !important;
     font-weight: 700 !important;
 }
 
-[data-testid="stMetricLabel"] {
-    color: var(--text-secondary) !important;
-}
-
-/* Custom Feature Badges */
 .mood-badge {
-    padding: 8px 16px;
+    padding: 6px 12px;
     border-radius: 20px;
     font-weight: 600;
-    font-size: 0.9rem;
-    color: #1E1E1E; /* Teks badge jadi gelap agar terbaca di warna cerah */
+    font-size: 0.85rem;
+    color: #1E1E1E;
     display: inline-block;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     text-align: center;
 }
 
-/* Expander Styling */
-.streamlit-expanderHeader {
-    font-weight: 600;
-    color: var(--text-primary) !important;
-    background-color: var(--card-color) !important;
-}
-
-/* Input Fields (Text Input, Selectbox) agar menyatu dengan dark mode */
-.stTextInput > div > div > input, 
-.stSelectbox > div > div > div {
-    background-color: #1A1C24 !important;
-    color: var(--text-primary) !important;
-    border-color: var(--border-color) !important;
-}
-
-/* Dataframe Styling */
+/* 7. Tables & Charts */
 [data-testid="stDataFrame"] {
-    background-color: var(--card-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+/* 8. Tab Styling */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 10px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background-color: var(--card-bg);
+    border-radius: 8px 8px 0 0;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+}
+
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background-color: var(--accent-color);
+    color: white;
 }

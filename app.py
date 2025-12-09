@@ -18,18 +18,18 @@ if 'engine' not in st.session_state:
 
 # Load CSS Helper
 def load_css(file_name):
-    with open(file_name) as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    try:
+        with open(file_name) as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    except FileNotFoundError:
+        st.warning("File styles.css tidak ditemukan. Tampilan mungkin berbeda.")
 
-try:
-    load_css('styles.css')
-except FileNotFoundError:
-    st.warning("File styles.css tidak ditemukan. Tampilan mungkin berbeda.")
+load_css('styles.css')
 
 # --- 2. SIDEBAR ---
 with st.sidebar:
     st.title("🎵 MoodAnalyzer")
-    st.caption("v3.0 • Modular Architecture")
+    st.caption("v3.1 • Dark Mode Edition")
     st.markdown("---")
     
     menu = st.radio(
@@ -54,7 +54,7 @@ with st.sidebar:
 
 # --- 3. PAGE CONTENT ---
 engine = st.session_state.engine
-COLORS = engine.COLORS # Ambil palet warna dari engine agar konsisten
+COLORS = engine.COLORS # Ambil palet warna dari engine
 
 # === HOME ===
 if menu == "🏠 Home":
@@ -64,7 +64,7 @@ if menu == "🏠 Home":
         st.markdown("""
         <p style='font-size: 1.1rem; line-height: 1.6;'>
         Sistem analisis emosi musik berbasis <b>Russell's Circumplex Model</b>. 
-        Pisahkan logika, data, dan tampilan untuk arsitektur aplikasi yang lebih baik.
+        Kini hadir dengan tampilan <b>Dark Mode</b> yang elegan untuk pengalaman visual yang lebih baik.
         </p>
         """, unsafe_allow_html=True)
     
@@ -93,7 +93,6 @@ if menu == "🏠 Home":
             """)
         with col_c:
             fig = go.Figure()
-            # ... (Plot logic visual tetap di UI karena ini visualisasi statis)
             configs = [
                 (0.5, 0.5, 1, 1, COLORS['moods']["Happy / Energetic"], "HAPPY"),
                 (0, 0.5, 0.5, 1, COLORS['moods']["Angry / Aggressive"], "ANGRY"),
@@ -102,10 +101,18 @@ if menu == "🏠 Home":
             ]
             for x0, y0, x1, y1, color, label in configs:
                 fig.add_shape(type="rect", x0=x0, y0=y0, x1=x1, y1=y1, fillcolor=color, opacity=0.6, line_width=0)
-                fig.add_annotation(x=(x0+x1)/2, y=(y0+y1)/2, text=label, showarrow=False, font=dict(color="white", weight="bold"))
+                fig.add_annotation(x=(x0+x1)/2, y=(y0+y1)/2, text=label, showarrow=False, 
+                                 font=dict(color="white", weight="bold"))
+            
             fig.update_xaxes(range=[0,1], showgrid=False, title="Valence")
             fig.update_yaxes(range=[0,1], showgrid=False, title="Energy")
-            fig.update_layout(height=200, margin=dict(t=0,b=20,l=20,r=20), plot_bgcolor='rgba(0,0,0,0)')
+            fig.update_layout(
+                height=200, 
+                margin=dict(t=0,b=20,l=20,r=20), 
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(color=COLORS['text'])
+            )
             st.plotly_chart(fig, use_container_width=True)
 
 # === UPLOAD ===
@@ -161,14 +168,13 @@ elif menu == "📊 Analytics Dashboard":
         # Filter UI
         with st.container(border=True):
             c1, c2 = st.columns(2)
-            # Ambil genre unik langsung dari dataframe engine
             df_full = engine.processed_data
             genres = ['All'] + sorted(df_full['genre'].astype(str).unique().tolist()) if 'genre' in df_full.columns else ['All']
             
             sel_genre = c1.selectbox("Genre", genres)
             sel_mood = c2.selectbox("Mood", ["All"] + list(COLORS['moods'].keys()))
         
-        # Get Filtered Data dari Engine
+        # Get Filtered Data
         df_filtered = engine.get_filtered_data(genre=sel_genre, mood=sel_mood)
         
         # Metrics
@@ -180,7 +186,7 @@ elif menu == "📊 Analytics Dashboard":
             avg_tempo = df_filtered['tempo'].mean() if 'tempo' in df_filtered.columns else 0
             m3.metric("Avg Tempo", f"{avg_tempo:.0f} BPM")
 
-        # Charts (Visualisasi tetap di UI layer)
+        # Charts
         c1, c2 = st.columns([2,1])
         with c1:
             with st.container(border=True):
@@ -189,15 +195,31 @@ elif menu == "📊 Analytics Dashboard":
                                hover_data=['artist', 'song'], color_discrete_map=COLORS['moods'])
                 fig.add_hline(y=0.5, line_dash="dash", line_color="gray")
                 fig.add_vline(x=0.5, line_dash="dash", line_color="gray")
-                fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', height=400)
+                
+                # Update layout untuk dark mode
+                fig.update_layout(
+                    plot_bgcolor='rgba(0,0,0,0)', 
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font=dict(color=COLORS['text']),
+                    height=400,
+                    xaxis=dict(showgrid=True, gridcolor='#333'),
+                    yaxis=dict(showgrid=True, gridcolor='#333')
+                )
+                # NOTE: use_container_width=True is standard for Streamlit Cloud stability
                 st.plotly_chart(fig, use_container_width=True)
         with c2:
             with st.container(border=True):
                 st.markdown("#### 🥧 Proportion")
                 counts = df_filtered['mood'].value_counts()
-                fig = px.donut(values=counts.values, names=counts.index, color=counts.index, 
+                fig = px.pie(values=counts.values, names=counts.index, color=counts.index, 
                              color_discrete_map=COLORS['moods'], hole=0.6)
-                fig.update_layout(showlegend=False, height=300, margin=dict(t=0,b=0,l=0,r=0))
+                fig.update_layout(
+                    showlegend=False, 
+                    height=300, 
+                    margin=dict(t=0,b=0,l=0,r=0),
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font=dict(color=COLORS['text'])
+                )
                 st.plotly_chart(fig, use_container_width=True)
     else:
         st.warning("Upload data terlebih dahulu.")
@@ -211,7 +233,6 @@ elif menu == "🎧 Playlist & Search":
             q = c1.text_input("Search", placeholder="Title / Artist")
             m = c2.selectbox("Mood Filter", ["All"] + list(COLORS['moods'].keys()))
         
-        # Gunakan fungsi search di engine
         res = engine.search_songs(q, m)
         st.caption(f"Found {len(res)} songs")
         
@@ -242,8 +263,22 @@ elif menu == "🎧 Playlist & Search":
                     cats = [metrics[k] for k in metrics if k in data]
                     
                     if vals:
-                        fig = go.Figure(data=go.Scatterpolar(r=vals, theta=cats, fill='toself', line_color=COLORS['accent']))
-                        fig.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0,1])), height=300, margin=dict(t=20,b=20))
+                        fig = go.Figure(data=go.Scatterpolar(
+                            r=vals, theta=cats, fill='toself', 
+                            line_color=COLORS['accent'],
+                            fillcolor='rgba(142, 124, 238, 0.3)'
+                        ))
+                        fig.update_layout(
+                            polar=dict(
+                                radialaxis=dict(visible=True, range=[0,1], gridcolor='#444', linecolor='#444'),
+                                angularaxis=dict(gridcolor='#444', linecolor='#444'),
+                                bgcolor='rgba(0,0,0,0)'
+                            ),
+                            height=300, 
+                            margin=dict(t=20,b=20),
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            font=dict(color=COLORS['text'])
+                        )
                         st.plotly_chart(fig, use_container_width=True)
     else:
         st.warning("Upload data terlebih dahulu.")

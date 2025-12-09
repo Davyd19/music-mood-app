@@ -1,18 +1,20 @@
 /* Global Settings */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* Variable Colors (Bisa disesuaikan di sini) */
+/* Variable Colors - DARK MODE */
 :root {
-    --bg-color: #F8F9FA;
-    --card-color: #FFFFFF;
-    --text-primary: #2C3E50;
-    --text-secondary: #7F8C8D;
-    --accent-color: #6C5CE7;
+    --bg-color: #0E1117;       /* Background Utama (Sangat Gelap) */
+    --card-color: #262730;     /* Warna Kartu (Abu-abu Gelap) */
+    --text-primary: #FAFAFA;   /* Teks Utama (Putih) */
+    --text-secondary: #B0B0B0; /* Teks Sekunder (Abu-abu Terang) */
+    --accent-color: #8E7CEE;   /* Aksen Ungu (Diterangkan sedikit agar kontras) */
+    --border-color: #383B42;   /* Warna Border Gelap */
 }
 
 .stApp {
     background-color: var(--bg-color);
     font-family: 'Poppins', sans-serif;
+    color: var(--text-primary);
 }
 
 /* Headings */
@@ -30,25 +32,33 @@ p, span, li, label, .stMarkdown {
     font-size: 0.9rem;
 }
 
-/* Sidebar Clean Look */
+/* Sidebar Dark Look */
 [data-testid="stSidebar"] {
-    background-color: #FFFFFF;
-    border-right: 1px solid #E0E0E0;
+    background-color: var(--card-color);
+    border-right: 1px solid var(--border-color);
+}
+
+[data-testid="stSidebar"] h1, 
+[data-testid="stSidebar"] h2, 
+[data-testid="stSidebar"] h3,
+[data-testid="stSidebar"] span, 
+[data-testid="stSidebar"] p {
+    color: var(--text-primary) !important;
 }
 
 /* Cards (Container dengan Border) */
 div[data-testid="stVerticalBlockBorderWrapper"] {
     background-color: var(--card-color);
-    border: 1px solid #E0E0E0 !important;
+    border: 1px solid var(--border-color) !important;
     border-radius: 12px !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3) !important; /* Shadow lebih tebal utk dark mode */
     padding: 20px !important;
 }
 
 /* Buttons */
 .stButton > button {
     background-color: var(--accent-color) !important;
-    color: white !important;
+    color: #FFFFFF !important;
     border-radius: 8px !important;
     border: none !important;
     font-weight: 500 !important;
@@ -58,7 +68,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {
 .stButton > button:hover {
     opacity: 0.9;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(142, 124, 238, 0.4) !important;
 }
 
 /* Metrics Styling */
@@ -67,20 +77,38 @@ div[data-testid="stVerticalBlockBorderWrapper"] {
     font-weight: 700 !important;
 }
 
+[data-testid="stMetricLabel"] {
+    color: var(--text-secondary) !important;
+}
+
 /* Custom Feature Badges */
 .mood-badge {
     padding: 8px 16px;
     border-radius: 20px;
     font-weight: 600;
     font-size: 0.9rem;
-    color: white;
+    color: #1E1E1E; /* Teks badge jadi gelap agar terbaca di warna cerah */
     display: inline-block;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     text-align: center;
 }
 
 /* Expander Styling */
 .streamlit-expanderHeader {
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
+    background-color: var(--card-color) !important;
+}
+
+/* Input Fields (Text Input, Selectbox) agar menyatu dengan dark mode */
+.stTextInput > div > div > input, 
+.stSelectbox > div > div > div {
+    background-color: #1A1C24 !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Dataframe Styling */
+[data-testid="stDataFrame"] {
+    background-color: var(--card-color);
 }

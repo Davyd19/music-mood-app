@@ -15,7 +15,8 @@ class MusicMLEngine:
                 "Sad / Melancholic": "#74B9FF",
                 "Chill / Peaceful": "#55EFC4"
             },
-            "accent": "#6C5CE7"
+            "accent": "#8E7CEE", # Disesuaikan dgn CSS
+            "text": "#FAFAFA"    # Warna teks untuk grafik (Putih)
         }
 
     def load_data(self, uploaded_file):

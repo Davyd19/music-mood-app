@@ -1,0 +1,86 @@
+/* Global Settings */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Variable Colors (Bisa disesuaikan di sini) */
+:root {
+    --bg-color: #F8F9FA;
+    --card-color: #FFFFFF;
+    --text-primary: #2C3E50;
+    --text-secondary: #7F8C8D;
+    --accent-color: #6C5CE7;
+}
+
+.stApp {
+    background-color: var(--bg-color);
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Headings */
+h1, h2, h3 {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+}
+
+p, span, li, label, .stMarkdown {
+    color: var(--text-primary);
+}
+
+.caption {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Sidebar Clean Look */
+[data-testid="stSidebar"] {
+    background-color: #FFFFFF;
+    border-right: 1px solid #E0E0E0;
+}
+
+/* Cards (Container dengan Border) */
+div[data-testid="stVerticalBlockBorderWrapper"] {
+    background-color: var(--card-color);
+    border: 1px solid #E0E0E0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+    padding: 20px !important;
+}
+
+/* Buttons */
+.stButton > button {
+    background-color: var(--accent-color) !important;
+    color: white !important;
+    border-radius: 8px !important;
+    border: none !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease;
+}
+
+.stButton > button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3) !important;
+}
+
+/* Metrics Styling */
+[data-testid="stMetricValue"] {
+    color: var(--accent-color) !important;
+    font-weight: 700 !important;
+}
+
+/* Custom Feature Badges */
+.mood-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+    display: inline-block;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+/* Expander Styling */
+.streamlit-expanderHeader {
+    font-weight: 600;
+    color: var(--text-primary);
+}
